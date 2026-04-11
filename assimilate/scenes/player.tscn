@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://ba241i8ev7mva"]
+
+[ext_resource type="Script" uid="uid://jlu6iur3k227" path="res://scripts/player.gd" id="1_3vyb7"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3vyb7"]
+size = Vector2(64, 64)
+
+[sub_resource type="Gradient" id="Gradient_g2els"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_qhqgy"]
+gradient = SubResource("Gradient_g2els")
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_3vyb7"]
+radius = 46.270943
+
+[node name="player" type="CharacterBody2D" unique_id=1476431664 groups=["player"]]
+script = ExtResource("1_3vyb7")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=604157961]
+shape = SubResource("RectangleShape2D_3vyb7")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=699165058]
+texture = SubResource("GradientTexture2D_qhqgy")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=195633115]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=241453535 groups=["player"]]
+shape = SubResource("CircleShape2D_3vyb7")

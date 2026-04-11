@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://nbpwydj2vsnq"]
+
+[ext_resource type="Script" uid="uid://bfn2fjokqpiho" path="res://scripts/enemy.gd" id="1_7p1mj"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7p1mj"]
+size = Vector2(64, 64)
+
+[sub_resource type="Gradient" id="Gradient_md0e3"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_4ra3w"]
+gradient = SubResource("Gradient_md0e3")
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_7p1mj"]
+radius = 45.01111
+
+[node name="enemy" type="CharacterBody2D" unique_id=1824895187]
+visibility_layer = 2
+script = ExtResource("1_7p1mj")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1207964134]
+shape = SubResource("RectangleShape2D_7p1mj")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=175321000]
+texture = SubResource("GradientTexture2D_4ra3w")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=2139624259]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1249029850]
+shape = SubResource("CircleShape2D_7p1mj")
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
