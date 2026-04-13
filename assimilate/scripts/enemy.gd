@@ -5,6 +5,7 @@ var player = null
 var health := 1
 var can_hit := true
 var is_hit := false
+var damage_cooldown := 0.0
 
 enum State { ENEMY, WEAPON }
 var state = State.ENEMY
@@ -20,12 +21,26 @@ var orbit_speed := 4
 var shoot_timer := 0
 
 func _physics_process(delta):
-	if state == State.ENEMY:
-		update_enemy_animation()
 	
-	if player == null or state != State.ENEMY:
+	damage_cooldown -= delta
+
+	# WEAPON ORBIT
+	if state == State.WEAPON and player_ref != null:
+		orbit_angle += orbit_speed * delta
+		var offset = Vector2(cos(orbit_angle), sin(orbit_angle)) * orbit_radius
+		global_position = player_ref.global_position + offset
 		return
 
+	# ENEMY LOGIC
+	if state != State.ENEMY:
+		return
+
+	if player == null:
+		return
+
+	update_enemy_animation()
+
+	# MOVEMENT BEHAVIOR
 	match type:
 		"chaser":
 			chase_player()
@@ -34,14 +49,34 @@ func _physics_process(delta):
 			shooter_behavior(delta)
 
 		"tank":
-			chase_player() # same movement, different stats
+			chase_player()
 
+	# APPLY MOVEMENT
 	var direction = (player.global_position - global_position).normalized()
-
 	velocity = direction * speed
 	move_and_slide()
+
+	# DAMAGE SYSTEM
+	if damage_cooldown > 0:
+		return
+
+	var bodies = $Area2D.get_overlapping_bodies()
+
+	for body in bodies:
+		# PLAYER DAMAGE ONLY
+		if body.has_method("take_damage") and not "state" in body:
+			if body.is_dead:
+				continue
+
+			body.take_damage(1)
+
+			damage_cooldown = 0.5  # tweak this for balance
+			break
 	
 func _ready():
+	can_hit = true
+	damage_cooldown = 0.0
+	
 	match type:
 		"chaser":
 			speed = 100
@@ -117,16 +152,16 @@ func convert_to_weapon():
 	velocity = Vector2.ZERO
 	set_physics_process(false)
 
-	# 🔥 ADD THESE
 	set_collision_layer(0)
 	set_collision_mask(0)
 
-	# optional (extra safe)
 	$CollisionShape2D.disabled = true
 
 	global_position = player_ref.global_position
 
 	player_ref.add_weapon(self)
+	
+	$Area2D.monitoring = true
 	
 func _process(delta):
 	if state == State.WEAPON and player_ref != null:
@@ -142,33 +177,19 @@ func _process(delta):
 		shoot_nearest_enemy()
 		
 func _on_area_2d_body_entered(body):
-	if not can_hit:
+	if state != State.WEAPON or not can_hit:
 		return
 
 	if body == self:
 		return
 
+	if body.has_method("take_damage") and "state" in body:
+		if body.state == State.ENEMY:
+			can_hit = false
+			body.take_damage()
 
-	if body.has_method("take_damage") and not "state" in body:
-
-		if body.has_method("is_dead") and body.is_dead:
-			return
-
-		can_hit = false
-		body.take_damage(1)
-
-		await get_tree().create_timer(0.3).timeout
-		can_hit = true
-		return
-
-	if state == State.WEAPON:
-		if body.has_method("take_damage") and "state" in body:
-			if body.state == State.ENEMY:
-				can_hit = false
-				body.take_damage()
-
-				await get_tree().create_timer(0.2).timeout
-				can_hit = true
+			await get_tree().create_timer(0.2).timeout
+			can_hit = true
 		
 func chase_player():
 	var direction = (player.global_position - global_position).normalized()

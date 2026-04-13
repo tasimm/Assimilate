@@ -391,8 +391,6 @@ radius = 10.049875
 light_mask = 2
 visibility_layer = 2
 script = ExtResource("1_7p1mj")
-speed = null
-type = null
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1207964134]
 visible = false

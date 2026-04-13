@@ -279,7 +279,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_2w11d")
 }],
-"loop": true,
+"loop": false,
 "name": &"death",
 "speed": 5.0
 }, {
@@ -473,7 +473,6 @@ radius = 11.171641
 
 [node name="player" type="CharacterBody2D" unique_id=1476431664 groups=["player"]]
 script = ExtResource("1_3vyb7")
-speed = null
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=604157961]
 visible = false

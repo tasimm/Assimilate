@@ -3,9 +3,10 @@ extends CharacterBody2D
 @export var speed := 200
 var weapons = []
 var max_weapons := 3
-var health := 5
-var max_health := 5
+var health := 100
+var max_health := 100
 var is_dead := false
+var is_invincible := false
 
 @onready var anim = $Sprite2D
 
@@ -48,6 +49,9 @@ func _process(delta):
 	if Input.is_action_just_pressed("ui_accept"):
 		attack()
 		
+	if is_dead:
+		return
+		
 func attack():
 	var bodies = $Area2D.get_overlapping_bodies()
 
@@ -83,28 +87,40 @@ func take_damage(amount):
 		return
 
 	flash()
-		
-func play_death():
-	velocity = Vector2.ZERO
-
-	set_physics_process(false)
-	set_process(false)
-
-	# Disable collisions
+	
+func disable_all_collisions():
 	set_collision_layer(0)
 	set_collision_mask(0)
 
-	# Disable attack area if you have one
+	# Disable any hitbox/Area2D
 	if has_node("Area2D"):
 		$Area2D.monitoring = false
 
+	# Disable ALL children collision shapes
+	for child in get_children():
+		if child is CollisionShape2D:
+			child.disabled = true
+		
+func play_death():
+	
+	set_physics_process(false)
+	set_process(false)
+
+	# Disable attack hitbox
+	if has_node("Area2D"):
+		$Area2D.monitoring = false
+
+	velocity = Vector2.ZERO
+
 	$Sprite2D.play("death")
 
-	await $Sprite2D.animation_finished
+	
+	await get_tree().create_timer(0.5).timeout
 
 	die()
 		
 func die():
+	await get_tree().create_timer(0.2).timeout
 	get_tree().paused = true
 	get_parent().show_game_over()
 	
@@ -113,4 +129,28 @@ func flash():
 
 	await get_tree().create_timer(0.1).timeout
 
+	modulate = Color(1, 1, 1)
+
+func _ready():
+	reset_player()
+	
+func reset_player():
+	is_dead = false
+	is_invincible = false
+
+	health = max_health
+
+	#Restore collisions
+	set_collision_layer(1)
+	set_collision_mask(1)
+
+	# Restore hitbox
+	if has_node("Area2D"):
+		$Area2D.monitoring = true
+
+	# Restore processing
+	set_physics_process(true)
+	set_process(true)
+
+	# Reset visuals
 	modulate = Color(1, 1, 1)
